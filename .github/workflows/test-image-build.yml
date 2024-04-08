@@ -35,6 +35,9 @@ jobs:
 
     - name: Set image name
       id: setimagename
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+        COMMIT: ${{ inputs.commit }}
       run: |
           echo "Image name: $REPOSITORY:$COMMIT"
           echo "imagename=$REPOSITORY:$COMMIT" >> $GITHUB_OUTPUT
