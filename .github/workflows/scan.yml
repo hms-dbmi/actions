@@ -48,6 +48,7 @@ jobs:
       id: buildimage
       uses: docker/build-push-action@v5
       with:
+        load: true
         context: ./
         file: ./Dockerfile
         push: false
