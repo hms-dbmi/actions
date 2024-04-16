@@ -54,26 +54,12 @@ jobs:
         push: false
         tags: ${{ steps.setimagename.outputs.imagename }}
 
-    - name: Check whether container scanning should be enabled
-      id: checkcontainerscanning
-      env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-          echo "Enable container scanning: ${{ env.SNYK_TOKEN != '' }}"
-          echo "enabled=${{ env.SNYK_TOKEN != '' }}" >> $GITHUB_OUTPUT
-
-    - name: Run Snyk to check Docker image for vulnerabilities
-      uses: snyk/actions/docker@master
-      if: steps.checkcontainerscanning.outputs.enabled == 'true'
-      continue-on-error: true
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
       with:
-        image: ${{ steps.setimagename.outputs.imagename }}
-        args: --file=Dockerfile
-
-    - name: Upload result to GitHub Code Scanning
-      uses: github/codeql-action/upload-sarif@v3
-      if: steps.checkcontainerscanning.outputs.enabled == 'true'
-      with:
-        sarif_file: snyk.sarif
+        image-ref: '${{ steps.setimagename.outputs.imagename }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
