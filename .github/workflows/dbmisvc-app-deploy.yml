@@ -1,7 +1,7 @@
 name: DBMISVC App Deploy
 
 on:
-  workflow_dispatch:
+  workflow_call:
     secrets:
       GH_TOKEN:
         required: true
