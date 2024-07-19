@@ -1,0 +1,75 @@
+name: DBMISVC App Deploy
+
+on:
+  workflow_dispatch:
+    secrets:
+      GH_TOKEN:
+        required: true
+    inputs:
+      role:
+        required: true
+        type: string
+      app:
+        required: true
+        type: string
+      bucket:
+        required: true
+        type: string
+      filename:
+        required: true
+        type: string
+
+env:
+  AWS_REGION: us-east-1
+
+permissions:
+  id-token: write
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+    - name: Install Python packages
+      run: |
+        python -m pip install --upgrade pip
+    - uses: cycjimmy/semantic-release-action@v4
+      id: semantic
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        GIT_AUTHOR_NAME: Bryan Larson
+        GIT_AUTHOR_EMAIL: bryan_larson@hms.harvard.edu
+      with:
+        extra_plugins: |
+          @semantic-release/exec
+          @semantic-release/changelog
+          @semantic-release/git
+    - name: Configure AWS credentials
+      if: steps.semantic.outputs.new_release_published == 'true'
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: ${{ inputs.role }}
+        role-duration-seconds: 900
+        role-session-name: GitHubActions-${{ github.run_id }}
+    - name: Extract and save commit
+      shell: bash
+      run: git rev-parse HEAD > COMMIT
+    - name: Zip artifacts
+      if: steps.semantic.outputs.new_release_published == 'true'
+      uses: thedoctor0/zip-release@master
+      with:
+        type: "zip"
+        filename: "${{ inputs.filename }}"
+    - name: Upload to AWS S3
+      if: steps.semantic.outputs.new_release_published == 'true'
+      run: |
+        echo "Uploading artifacts to S3"
+        aws s3 cp ${{ inputs.filename }} s3://${{ inputs.bucket }}/
