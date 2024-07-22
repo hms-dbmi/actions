@@ -32,15 +32,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4.1.7
     - name: Set up Python 3.11
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.1.1
       with:
         python-version: 3.11
     - name: Install Python packages
       run: |
         python -m pip install --upgrade pip
-    - uses: cycjimmy/semantic-release-action@v4
+    - uses: cycjimmy/semantic-release-action@v4.1.0
       id: semantic
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -53,7 +53,7 @@ jobs:
           @semantic-release/git
     - name: Configure AWS credentials
       if: steps.semantic.outputs.new_release_published == 'true'
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@v4.0.2
       with:
         aws-region: ${{ env.AWS_REGION }}
         role-to-assume: ${{ inputs.role }}
@@ -64,7 +64,7 @@ jobs:
       run: git rev-parse HEAD > COMMIT
     - name: Zip artifacts
       if: steps.semantic.outputs.new_release_published == 'true'
-      uses: thedoctor0/zip-release@master
+      uses: thedoctor0/zip-release@0.7.6
       with:
         type: "zip"
         filename: "${{ inputs.filename }}"
