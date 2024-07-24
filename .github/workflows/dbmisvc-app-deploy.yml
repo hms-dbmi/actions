@@ -18,6 +18,9 @@ on:
       filename:
         required: true
         type: string
+      force:
+        type: boolean
+        default: false
 
 env:
   AWS_REGION: us-east-1
@@ -52,7 +55,7 @@ jobs:
           @semantic-release/changelog
           @semantic-release/git
     - name: Configure AWS credentials
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: ${{ env.AWS_REGION }}
@@ -60,16 +63,17 @@ jobs:
         role-duration-seconds: 900
         role-session-name: GitHubActions-${{ github.run_id }}
     - name: Extract and save commit
+      if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       shell: bash
       run: git rev-parse HEAD > COMMIT
     - name: Zip artifacts
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       uses: thedoctor0/zip-release@master
       with:
         type: "zip"
         filename: "${{ inputs.filename }}"
     - name: Upload to AWS S3
-      if: steps.semantic.outputs.new_release_published == 'true'
+      if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       run: |
         echo "Uploading artifacts to S3"
         aws s3 cp ${{ inputs.filename }} s3://${{ inputs.bucket }}/
