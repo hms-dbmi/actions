@@ -83,7 +83,7 @@ jobs:
           git fetch --unshallow
           git checkout ${{ inputs.backmerge }}
           git pull
-          git merge --no-ff ${{ needs.metadata.outputs.branch }} -m "chore(cd): Merging v${{ steps.semantic.outputs.new_release_version }} back into '${{ inputs.backmerge }}'"
+          git merge --no-ff ${{ needs.metadata.outputs.branch }} -m "chore(ci): Merging v${{ steps.semantic.outputs.new_release_version }} back into '${{ inputs.backmerge }}'"
           git push
           git checkout ${{ needs.metadata.outputs.branch }}
     - name: Configure AWS credentials
