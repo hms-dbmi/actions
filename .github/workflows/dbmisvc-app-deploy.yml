@@ -82,6 +82,7 @@ jobs:
       run: |
           git pull
           git checkout ${{ inputs.backmerge }}
+          git branch --set-upstream-to origin/${{ inputs.backmerge }}
           git pull
           git merge --no-ff ${{ needs.metadata.outputs.branch }} -m "chore(ci): Merging v${{ steps.semantic.outputs.new_release_version }} back into '${{ inputs.backmerge }}'"
           git push
