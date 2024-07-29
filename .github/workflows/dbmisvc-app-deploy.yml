@@ -80,7 +80,7 @@ jobs:
     - name: Back merge
       if: steps.semantic.outputs.new_release_published == 'true' && !steps.semantic.outputs.new_release_channel && inputs.backmerge
       run: |
-          git fetch --unshallow
+          git pull
           git checkout ${{ inputs.backmerge }}
           git pull
           git merge --no-ff ${{ needs.metadata.outputs.branch }} -m "chore(ci): Merging v${{ steps.semantic.outputs.new_release_version }} back into '${{ inputs.backmerge }}'"
