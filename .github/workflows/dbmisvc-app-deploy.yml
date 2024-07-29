@@ -21,6 +21,9 @@ on:
       force:
         type: boolean
         default: false
+      backmerge:
+        type: string
+        required: false
 
 env:
   AWS_REGION: us-east-1
@@ -55,6 +58,13 @@ jobs:
           @semantic-release/changelog
           @semantic-release/git
           @semantic-release/github
+    - name: Back merge
+      if: steps.semantic.outputs.new_release_published == 'true' && !steps.semantic.outputs.new_release_channel && inputs.backmerge
+      uses: devmasx/merge-branch@master
+      with:
+        type: now
+        target_branch: ${{ inputs.backmerge }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
     - name: Configure AWS credentials
       if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       uses: aws-actions/configure-aws-credentials@v4
