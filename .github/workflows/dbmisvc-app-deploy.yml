@@ -21,6 +21,9 @@ on:
       force:
         type: boolean
         default: false
+      backmerge:
+        type: string
+        required: false
 
 env:
   AWS_REGION: us-east-1
@@ -32,8 +35,22 @@ permissions:
   pull-requests: write
 
 jobs:
+  metadata:
+    runs-on: "ubuntu-latest"
+    outputs:
+      branch: ${{ steps.set_branch.outputs.branch }}
+    steps:
+      - name: Set the current branch name
+        id: set_branch
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
   deploy:
     runs-on: ubuntu-latest
+    needs:
+      - "metadata"
+    outputs:
+      released: ${{ steps.semantic.outputs.new_release_published }}
+      channel: ${{ steps.semantic.outputs.new_release_channel }}
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.11
@@ -55,6 +72,21 @@ jobs:
           @semantic-release/changelog
           @semantic-release/git
           @semantic-release/github
+    - name: Prepare for back merge
+      if: steps.semantic.outputs.new_release_published == 'true' && !steps.semantic.outputs.new_release_channel && inputs.backmerge
+      run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+    - name: Back merge
+      if: steps.semantic.outputs.new_release_published == 'true' && !steps.semantic.outputs.new_release_channel && inputs.backmerge
+      run: |
+          git pull
+          git checkout ${{ inputs.backmerge }}
+          git branch --set-upstream-to origin/${{ inputs.backmerge }}
+          git pull
+          git merge --no-ff ${{ needs.metadata.outputs.branch }} -m "chore(ci): Merging v${{ steps.semantic.outputs.new_release_version }} back into '${{ inputs.backmerge }}'"
+          git push
+          git checkout ${{ needs.metadata.outputs.branch }}
     - name: Configure AWS credentials
       if: steps.semantic.outputs.new_release_published == 'true' || inputs.force
       uses: aws-actions/configure-aws-credentials@v4
