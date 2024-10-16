@@ -56,7 +56,8 @@ jobs:
       uses: aquasecurity/trivy-action@master
       env:
         TRIVY_DB_REPOSITORY: "aquasec/trivy-db:2,public.ecr.aws/aquasecurity/trivy-db:2,ghcr.io/aquasecurity/trivy-db:2"
-      with:
+        TRIVY_JAVA_DB_REPOSITORY: "aquasec/trivy-java-db:1,public.ecr.aws/aquasecurity/trivy-java-db:1,ghcr.io/aquasecurity/trivy-java-db:1"
+        with:
         image-ref: '${{ steps.setimagename.outputs.imagename }}'
         format: 'table'
         exit-code: '1'
