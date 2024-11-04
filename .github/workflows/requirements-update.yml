@@ -45,13 +45,13 @@ jobs:
       id: set_input_values
       run: |
         BASE_BRANCH=${{ github.event.inputs.base_branch }}
-        echo "value=${BASE_BRANCH:-"development"}" >> "$GITHUB_OUTPUT"
+        echo "base_branch=${BASE_BRANCH:-"development"}" >> "$GITHUB_OUTPUT"
         REQUIREMENTS_INPUT=${{ github.event.inputs.requirements_input }}
-        echo "value=${REQUIREMENTS_INPUT:-"requirements.in"}" >> "$GITHUB_OUTPUT"
+        echo "requirements_input=${REQUIREMENTS_INPUT:-"requirements.in"}" >> "$GITHUB_OUTPUT"
         REQUIREMENTS_OUTPUT=${{ github.event.inputs.requirements_output }}
-        echo "value=${REQUIREMENTS_OUTPUT:-"requirements.txt"}" >> "$GITHUB_OUTPUT"
+        echo "requirements_output=${REQUIREMENTS_OUTPUT:-"requirements.txt"}" >> "$GITHUB_OUTPUT"
         DEV_REQUIREMENTS=${{ github.event.inputs.dev_requirements }}
-        echo "value=${DEV_REQUIREMENTS:-"dev-requirements.txt"}" >> "$GITHUB_OUTPUT"
+        echo "dev_requirements=${DEV_REQUIREMENTS:-"dev-requirements.txt"}" >> "$GITHUB_OUTPUT"
 
     - name: Checkout
       uses: actions/checkout@v4
