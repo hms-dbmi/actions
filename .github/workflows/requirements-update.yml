@@ -2,6 +2,11 @@ name: Requirements Update
 
 on:
   workflow_call:
+    inputs:
+      base_branch:
+        type: string
+        required: false
+        description: "The branch to use as the base branch for the pull request, defaults to 'development'"
     secrets:
       GH_TOKEN:
         required: true
@@ -24,10 +29,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Set base branch
+      id: set_base_branch
+      run: |
+        BASE_BRANCH=${{ github.event.inputs.base_branch }}
+        echo "value=${BASE_BRANCH:-"development"}" >> "$GITHUB_OUTPUT"
+
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        ref: development
+        ref: ${{ steps.set_base_branch.outputs.base_branch }}
 
     - name: Setup python
       uses: actions/setup-python@v5
@@ -50,7 +61,7 @@ jobs:
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GH_TOKEN }}
-        base: development
+        base: ${{ steps.set_base_branch.outputs.base_branch }}
         branch: requirements-updates
         branch-suffix: timestamp
         delete-branch: true
